@@ -221,111 +221,124 @@
 
     let allData;
 
-    function processData(df) {
-        allData = df;
+		function processData(df) {
+			allData = df;
 
-        const pilihankab = [...new Set(df.map(item => item['Kabupaten/Kota']))];
+			const pilihankab = [...new Set(df.map(item => item['Kabupaten/Kota']))];
 
-        const kabupatenSelect = document.getElementById('kabupatenSelect');
-        pilihankab.forEach(kabupaten => {
-            const option = document.createElement('option');
-            option.value = kabupaten;
-            option.textContent = kabupaten;
-            kabupatenSelect.appendChild(option);
-        });
+			const kabupatenSelect = document.getElementById('kabupatenSelect');
+			pilihankab.forEach(kabupaten => {
+				const option = document.createElement('option');
+				option.value = kabupaten;
+				option.textContent = kabupaten;
+				kabupatenSelect.appendChild(option);
+			});
 
-        kabupatenSelect.addEventListener('change', function () {
-            const selectedKabupaten = this.value;
-            populateKecamatan(selectedKabupaten);
-            populateDesa('all', selectedKabupaten);
-            displayData();
-        });
+			kabupatenSelect.addEventListener('change', function () {
+				const selectedKabupaten = this.value;
+				populateKecamatan(selectedKabupaten);
+				clearDesa(); // Clear desa options when kabupaten changes
+				displayData();
+			});
 
-        const kecamatanSelect = document.getElementById('kecamatanSelect');
-        kecamatanSelect.addEventListener('change', function () {
-            const selectedKabupaten = kabupatenSelect.value;
-            const selectedKecamatan = this.value;
-            populateDesa(selectedKecamatan, selectedKabupaten)
-            displayData();
-        });
+			const kecamatanSelect = document.getElementById('kecamatanSelect');
+			kecamatanSelect.addEventListener('change', function () {
+				const selectedKabupaten = kabupatenSelect.value;
+				const selectedKecamatan = this.value;
+				populateDesa(selectedKecamatan, selectedKabupaten)
+				displayData();
+			});
 
-        const desaSelect = document.getElementById('desaSelect');
-        desaSelect.addEventListener('change', function () {
-            displayData();
-        });
+			const desaSelect = document.getElementById('desaSelect');
+			desaSelect.addEventListener('change', function () {
+				displayData();
+			});
 
-        const dataTypeSelect = document.getElementById('dataTypeSelect');
-        dataTypeSelect.addEventListener('change', function () {
-            displayData();
-        });
+			const dataTypeSelect = document.getElementById('dataTypeSelect');
+			dataTypeSelect.addEventListener('change', function () {
+				displayData();
+			});
 
-        populateKecamatan('all');
-        populateDesa('all', 'all');
-        displayData();
-    }
+			// Initialize with empty Kecamatan and Desa lists
+			clearKecamatan();
+			clearDesa();
+			populateKecamatan('all');
+			displayData();
+		}
 
-    function populateKecamatan(selectedKabupaten) {
-        const kecamatanSelect = document.getElementById('kecamatanSelect');
-        kecamatanSelect.innerHTML = '<option value="all">Semua</option>';
+		function populateKecamatan(selectedKabupaten) {
+			const kecamatanSelect = document.getElementById('kecamatanSelect');
+			kecamatanSelect.innerHTML = '<option value="all">Semua</option>';
 
-        let kecamatanOptions = [];
-        if (selectedKabupaten === 'all') {
-            kecamatanOptions = [...new Set(allData.map(item => item['Kecamatan']))];
-        } else {
-            kecamatanOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten).map(item => item['Kecamatan']))];
-        }
+			// Only populate kecamatan if a kabupaten has been selected
+			if (selectedKabupaten !== 'all') {
+				let kecamatanOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten).map(item => item['Kecamatan']))];
 
-        kecamatanOptions.forEach(kecamatan => {
-            const option = document.createElement('option');
-            option.value = kecamatan;
-            option.textContent = kecamatan;
-            kecamatanSelect.appendChild(option);
-        });
-    }
+				kecamatanOptions.forEach(kecamatan => {
+					const option = document.createElement('option');
+					option.value = kecamatan;
+					option.textContent = kecamatan;
+					kecamatanSelect.appendChild(option);
+				});
+			}
+		}
 
-    function populateDesa(selectedKecamatan, selectedKabupaten) {
-        const desaSelect = document.getElementById('desaSelect');
-        desaSelect.innerHTML = '<option value="all">Semua</option>';
+		function populateDesa(selectedKecamatan, selectedKabupaten) {
+			const desaSelect = document.getElementById('desaSelect');
+			desaSelect.innerHTML = '<option value="all">Semua</option>';
 
-        let desaOptions = [];
+			 // Only populate desa if a kecamatan has been selected
+			if (selectedKecamatan !== 'all') {
+				let desaOptions = [];
 
-        if (selectedKabupaten === 'all' && selectedKecamatan === 'all') {
-            desaOptions = [...new Set(allData.map(item => item['Kelurahan/Desa']))]
-        } else if (selectedKabupaten !== 'all' && selectedKecamatan === 'all') {
-            desaOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten).map(item => item['Kelurahan/Desa']))]
-        } else if (selectedKabupaten !== 'all' && selectedKecamatan !== 'all') {
-            desaOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten && item['Kecamatan'] === selectedKecamatan).map(item => item['Kelurahan/Desa']))];
-        } else if (selectedKabupaten === 'all' && selectedKecamatan !== 'all') {
-            desaOptions = [...new Set(allData.filter(item => item['Kecamatan'] === selectedKecamatan).map(item => item['Kelurahan/Desa']))];
-        }
+				if (selectedKabupaten === 'all' && selectedKecamatan === 'all') {
+					desaOptions = [...new Set(allData.map(item => item['Kelurahan/Desa']))]
+				} else if (selectedKabupaten !== 'all' && selectedKecamatan === 'all') {
+					desaOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten).map(item => item['Kelurahan/Desa']))]
+				} else if (selectedKabupaten !== 'all' && selectedKecamatan !== 'all') {
+					desaOptions = [...new Set(allData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten && item['Kecamatan'] === selectedKecamatan).map(item => item['Kelurahan/Desa']))];
+				} else if (selectedKabupaten === 'all' && selectedKecamatan !== 'all') {
+					desaOptions = [...new Set(allData.filter(item => item['Kecamatan'] === selectedKecamatan).map(item => item['Kelurahan/Desa']))];
+				}
 
-        desaOptions.forEach(desa => {
-            const option = document.createElement('option');
-            option.value = desa;
-            option.textContent = desa;
-            desaSelect.appendChild(option);
-        });
-    }
+				desaOptions.forEach(desa => {
+					const option = document.createElement('option');
+					option.value = desa;
+					option.textContent = desa;
+					desaSelect.appendChild(option);
+				});
+			}
+		}
 
-function displayData() {
-    const selectedKabupaten = document.getElementById('kabupatenSelect').value;
-    const selectedKecamatan = document.getElementById('kecamatanSelect').value;
-    const selectedDesa = document.getElementById('desaSelect').value;
-    const selectedDataType = document.getElementById('dataTypeSelect').value;
+		function clearKecamatan() {
+			const kecamatanSelect = document.getElementById('kecamatanSelect');
+			kecamatanSelect.innerHTML = '<option value="all">Semua</option>';
+		}
 
-    let filteredData = allData;
+		function clearDesa() {
+			const desaSelect = document.getElementById('desaSelect');
+			desaSelect.innerHTML = '<option value="all">Semua</option>';
+		}
 
-    if (selectedKabupaten !== 'all') {
-        filteredData = filteredData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten);
-    }
+	function displayData() {
+		const selectedKabupaten = document.getElementById('kabupatenSelect').value;
+		const selectedKecamatan = document.getElementById('kecamatanSelect').value;
+		const selectedDesa = document.getElementById('desaSelect').value;
+		const selectedDataType = document.getElementById('dataTypeSelect').value;
 
-    if (selectedKecamatan !== 'all') {
-        filteredData = filteredData.filter(item => item['Kecamatan'] === selectedKecamatan);
-    }
+		let filteredData = allData;
 
-    if (selectedDesa !== 'all') {
-        filteredData = filteredData.filter(item => item['Kelurahan/Desa'] === selectedDesa);
-    }
+		if (selectedKabupaten !== 'all') {
+			filteredData = filteredData.filter(item => item['Kabupaten/Kota'] === selectedKabupaten);
+		}
+
+		if (selectedKecamatan !== 'all') {
+			filteredData = filteredData.filter(item => item['Kecamatan'] === selectedKecamatan);
+		}
+
+		if (selectedDesa !== 'all') {
+			filteredData = filteredData.filter(item => item['Kelurahan/Desa'] === selectedDesa);
+		}
 
     let processedData;
     let dataTableColumns = [];
